@@ -1,0 +1,8 @@
+Django>=4.2
+channels>=4.0
+channels-redis>=4.0
+daphne>=4.0
+uvicorn>=0.22.0
+asgiref>=3.7
+psycopg2-binary>=2.9 # optional if you use Postgres
+python-dotenv>=1.0 # optional for env vars
