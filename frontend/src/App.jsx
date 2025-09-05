@@ -1,15 +1,18 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Stage, Layer, Line } from "react-konva";
+import { ChromePicker } from 'react-color';
+import "./App.css"
 
 function App() {
   const [lines, setLines] = useState([]);
   const isDrawing = useRef(false);
   const wsRef = useRef(null);
+  const [colorState, setColorState] = useState("#ff0000")
+
 
   useEffect(() => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const wsUrl = `${protocol}://${window.location.host}/ws/room/test/`;
-    const ws = new WebSocket(wsUrl);
+    const ws = new WebSocket(`${protocol}://localhost:8000/ws/room/test/`);
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -43,7 +46,7 @@ function App() {
   const handleMouseDown = (e) => {
     isDrawing.current = true;
     const pos = e.target.getStage().getPointerPosition();
-    const newLine = { points: [pos.x, pos.y], color: "black" };
+    const newLine = { points: [pos.x, pos.y], color: colorState };
     setLines([...lines, newLine]);
   };
 
@@ -72,27 +75,35 @@ function App() {
   };
 
   return (
-    <Stage
-      width={window.innerWidth}
-      height={window.innerHeight}
-      onMouseDown={handleMouseDown}
-      onMousemove={handleMouseMove}
-      onMouseup={handleMouseUp}
-    >
-      <Layer>
-        {lines.map((line, i) => (
-          <Line
-            key={i}
-            points={line.points}
-            stroke={line.color}
-            strokeWidth={2}
-            tension={0.5}
-            lineCap="round"
-            lineJoin="round"
-          />
-        ))}
-      </Layer>
-    </Stage>
+    <div>
+      <ChromePicker
+          className="unselectable-element" 
+          color={ colorState }
+          onChangeComplete={ (color) => setColorState(color.hex) }
+      />
+      <Stage
+        width={window.innerWidth}
+        height={window.innerHeight}
+        onMouseDown={handleMouseDown}
+        onMousemove={handleMouseMove}
+        onMouseup={handleMouseUp}
+      >
+        <Layer>
+          
+          {lines.map((line, i) => (
+            <Line
+              key={i}
+              points={line.points}
+              stroke={line.color}
+              strokeWidth={2}
+              tension={0.5}
+              lineCap="round"
+              lineJoin="round"
+            />
+          ))}
+        </Layer>
+      </Stage>
+    </div>
   );
 }
 
