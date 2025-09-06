@@ -2,8 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { Stage, Layer, Line } from "react-konva";
 import { ChromePicker } from 'react-color';
 import "./App.css"
+import InstrumentButton from "./compoments/InstrumentButton";
+
+import { FaHandPaper, FaPaintBrush } from "react-icons/fa";
 
 function App() {
+  const [instrument, setInstrument] = useState("hand");
+
   const [lines, setLines] = useState([]);
   const isDrawing = useRef(false);
   const wsRef = useRef(null);
@@ -76,11 +81,18 @@ function App() {
 
   return (
     <div>
-      <ChromePicker
-          className="unselectable-element" 
-          color={ colorState }
-          onChangeComplete={ (color) => setColorState(color.hex) }
-      />
+      <h1>Active instrument: {instrument}</h1>
+      <div className="instrument-buttons">
+        <InstrumentButton buttonInstrument = {"hand"} handleSetInstrument = {setInstrument} Icon={FaHandPaper}>
+        </InstrumentButton>
+        <InstrumentButton buttonInstrument = {"paint"} handleSetInstrument = {setInstrument} Icon={FaPaintBrush}>
+        </InstrumentButton>
+        <ChromePicker 
+            className="unselectable-element hide" 
+            color={ colorState }
+            onChangeComplete={ (color) => setColorState(color.hex) }
+        />
+      </div>
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
