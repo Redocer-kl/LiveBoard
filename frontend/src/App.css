@@ -19,6 +19,16 @@
   border-radius: 16px 16px 0px 0px;
 }
 
-.hide {
-  display: none;
+.color-pallet {
+  position: absolute;
+  bottom: 140%;
+  left: -200%;
+}
+
+
+h1{
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 9999;
 }
