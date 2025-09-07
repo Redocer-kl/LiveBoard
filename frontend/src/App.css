@@ -21,7 +21,7 @@
 
 .color-pallet {
   position: absolute;
-  bottom: 140%;
+  bottom: 100%;
   left: -200%;
 }
 
@@ -31,4 +31,8 @@ h1{
   top: 0;
   left: 0;
   z-index: 9999;
+}
+
+.hide {
+  display: none;
 }

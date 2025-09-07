@@ -17,7 +17,7 @@ function App() {
 
   const [gridEnabled, setGridEnabled] = useState(true);
   const [gridSize, setGridSize] = useState(40);
-
+  const [colorActive, setColorActive] = useState(false);
 
   const stageRef = useRef();
 
@@ -160,7 +160,7 @@ const clampScale = (s) => Math.max(0.1, Math.min(4, s));
   };
 
   return (
-    <div>
+    <div style={{position: "relative"}}>
       <h1 className="unselectable-element ">Active instrument: {instrument}</h1>
       <div className="instrument-buttons">
         <InstrumentButton buttonInstrument = {"hand"} handleSetInstrument = {setInstrument} Icon={FaHandPaper}>
@@ -176,14 +176,15 @@ const clampScale = (s) => Math.max(0.1, Math.min(4, s));
           border: "2px solid",
           borderRadius: 8,
           position: "relative",
-          }}>
+          }}
+          onClick={() => setColorActive(!colorActive)}>
+          
+        </div>
           <ChromePicker 
-            className="unselectable-element color-pallet" 
+            className={"unselectable-element color-pallet" + (!colorActive ? " hide" : "")} 
             color={ colorState }
             onChangeComplete={ (color) => setColorState(color.hex) }
           />
-        </div>
-        
       </div>
       <Stage
         ref={stageRef}
