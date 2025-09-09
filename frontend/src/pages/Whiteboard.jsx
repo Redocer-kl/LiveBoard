@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { Stage, Layer, Line } from "react-konva";
 import { ChromePicker } from "react-color";
 import "../styles/Whiteboard.css"
 import InstrumentButton from "../components/InstrumentButton";
 import Grid from "../components/Grid"
 import { FaHandPaper, FaPaintBrush } from "react-icons/fa";
+import { AuthContext } from "../components/AuthContext";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -14,6 +15,7 @@ function Whiteboard() {
   const isDrawing = useRef(false);
   const wsRef = useRef(null);
   const [colorState, setColorState] = useState("#ff0000");
+  const { user, logout } = useContext(AuthContext);
 
   const [gridEnabled, setGridEnabled] = useState(true);
   const [gridSize, setGridSize] = useState(40);
@@ -291,7 +293,7 @@ function Whiteboard() {
 
   return (
     <div style={{position: "relative"}}>
-      <h1 className="unselectable-element" style={{position: "absolute"}}> Active instrument: {instrument}</h1>
+      <h1 className="unselectable-element" style={{position: "absolute"}}> {user ? user.username : "Guest"}  Active instrument: {instrument}</h1>
       <div className="instrument-buttons">
         <InstrumentButton buttonInstrument = {"hand"} handleSetInstrument = {setInstrument} Icon={FaHandPaper} />
         <InstrumentButton buttonInstrument = {"paint"} handleSetInstrument = {setInstrument} Icon={FaPaintBrush} />
