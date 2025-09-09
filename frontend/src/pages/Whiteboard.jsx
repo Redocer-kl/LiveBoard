@@ -6,8 +6,9 @@ import InstrumentButton from "../components/InstrumentButton";
 import Grid from "../components/Grid"
 import { FaHandPaper, FaPaintBrush } from "react-icons/fa";
 import { AuthContext } from "../components/AuthContext";
+import SideBar from "../components/SideBar";
 
-const uid = () => Math.random().toString(36).slice(2, 10);
+
 
 function Whiteboard() {
   const [instrument, setInstrument] = useState("hand");
@@ -23,8 +24,14 @@ function Whiteboard() {
 
   const stageRef = useRef();
 
+  useEffect(() => {
+    if (user) {
+      clientIdRef.current = user.id;
+    }
+  }, [user]);
+
   // ids
-  const clientIdRef = useRef(uid());
+  const clientIdRef = useRef(user ? user.id : null);
   const strokeIdRef = useRef(0);
 
   useEffect(() => {
@@ -49,7 +56,7 @@ function Whiteboard() {
             {
               points: flattenPointsArray(data.points),
               color: data.color || "#000",
-              clientId: data.clientId,
+              userId: data.userId,
               strokeId: data.strokeId,
               finished: true,
             },
@@ -165,10 +172,11 @@ function Whiteboard() {
     const newLine = {
       points: [pos.x, pos.y], // flat array
       color: colorState,
-      clientId: clientIdRef.current,
+      userId: clientIdRef.current,
       strokeId,
       finished: false,
     };
+    console.log(lines);
 
     // add to local state (optimistic)
     setLines((prev) => [...prev, newLine]);
@@ -188,7 +196,7 @@ function Whiteboard() {
       const last = prev[lastIndex];
 
       // protect against cases where instrument changed
-      if (last.clientId !== clientIdRef.current || last.finished) return prev;
+      if (last.userId !== clientIdRef.current || last.finished) return prev;
 
       const updated = {
         ...last,
@@ -208,11 +216,11 @@ function Whiteboard() {
     // find active stroke
     setLines((prev) => {
       // Work on the copy before returning new state
-      const idx = prev.map((s) => s.clientId === clientIdRef.current && !s.finished).indexOf(true);
+      const idx = prev.map((s) => s.userId=== clientIdRef.current && !s.finished).indexOf(true);
       // The above is a bit awkward: walk to find last unfinished stroke by this client:
       let foundIndex = -1;
       for (let i = prev.length - 1; i >= 0; i--) {
-        if (prev[i].clientId === clientIdRef.current && !prev[i].finished) {
+        if (prev[i].userId === clientIdRef.current && !prev[i].finished) {
           foundIndex = i;
           break;
         }
@@ -247,7 +255,7 @@ function Whiteboard() {
         ws.send(
           JSON.stringify({
             type: "stroke_update",
-            clientId: clientIdRef.current,
+            userId: clientIdRef.current,
             strokeId: stroke.strokeId,
             color: stroke.color,
             points: smoothedPairs, // send as [{x,y},...]
@@ -291,6 +299,25 @@ function Whiteboard() {
     stage.batchDraw();
   };
 
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup the event listener on component unmount
+    return () => window.removeEventListener('resize', handleResize);
+  }, []); 
+
   return (
     <div style={{position: "relative"}}>
       <h1 className="unselectable-element" style={{position: "absolute"}}> {user ? user.username : "Guest"}  Active instrument: {instrument}</h1>
@@ -315,11 +342,13 @@ function Whiteboard() {
           onChangeComplete={ (color) => setColorState(color.hex) }
         />
       </div>
+      <SideBar>
 
+      </SideBar>
       <Stage
         ref={stageRef}
-        width={window.innerWidth}
-        height={window.innerHeight}
+        width={windowSize.width}
+        height={windowSize.height}
         draggable={instrument==="hand"}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -330,7 +359,7 @@ function Whiteboard() {
         <Layer>
           {lines.map((line, i) => (
             <Line
-              key={`${line.clientId || "local"}-${line.strokeId ?? i}`}
+              key={`${line.userId || "local"}-${line.strokeId ?? i}`} clientId
               points={line.points}
               stroke={line.color}
               strokeWidth={2}

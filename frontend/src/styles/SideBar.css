@@ -1,0 +1,63 @@
+/* Sidebar container */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 250px;
+  height: 100vh;
+  background: #2c3e50;
+  transition: left 0.3s ease-in-out;
+  z-index: 1000;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+/* When sidebar is open */
+.sidebar.open {
+  left: 0;
+}
+
+/* Open/Close buttons */
+.open-btn, .close-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: #3498db;
+  border: none;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 1001;
+  transition: background 0.3s;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  left: auto;
+}
+
+.open-btn:hover, .close-btn:hover {
+  background: #2980b9;
+}
+
+.open-btn{
+    z-index: 999;
+}
+
+/* Sidebar content */
+.sidebar-content {
+  padding: 60px 20px 20px;
+  height: 100%;
+  overflow-y: auto;
+  color: white;
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+  .sidebar {
+    width: 200px;
+    left: -200px;
+  }
+}

@@ -31,7 +31,7 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 {
                     "type": "stroke.broadcast",   # calls stroke_broadcast on consumers
                     "sender_channel": self.channel_name,
-                    "clientId": content.get("clientId"),
+                    "userId": content.get("userId"),
                     "strokeId": content.get("strokeId"),
                     "color": content.get("color"),
                     "points": content.get("points"),
