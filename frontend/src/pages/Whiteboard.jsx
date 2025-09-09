@@ -259,7 +259,7 @@ function Whiteboard() {
   };
 
   // wheel zoom handler (copy of your existing, unchanged)
-  const clampScale = (s) => Math.max(0.1, Math.min(4, s));
+  const clampScale = (s) => Math.max(0.5, Math.min(4, s));
   const handleWheel = (e) => {
     e.evt.preventDefault();
     const stage = stageRef.current;
@@ -276,6 +276,7 @@ function Whiteboard() {
     const direction = e.evt.deltaY > 0 ? -1 : 1; // deltaY>0 means scroll down
     let newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
     newScale = clampScale(newScale);
+    console.log(newScale);
 
     stage.scale({ x: newScale, y: newScale });
 
@@ -290,15 +291,15 @@ function Whiteboard() {
 
   return (
     <div style={{position: "relative"}}>
-      <h1 className="unselectable-element ">Active instrument: {instrument}</h1>
+      <h1 className="unselectable-element" style={{position: "absolute"}}> Active instrument: {instrument}</h1>
       <div className="instrument-buttons">
         <InstrumentButton buttonInstrument = {"hand"} handleSetInstrument = {setInstrument} Icon={FaHandPaper} />
         <InstrumentButton buttonInstrument = {"paint"} handleSetInstrument = {setInstrument} Icon={FaPaintBrush} />
         <div className="color"
          style={{
           backgroundColor: colorState,
-          width: 20,
-          height: 20,
+          width: 40,
+          height: 40,
           padding: 8,
           border: "2px solid",
           borderRadius: 8,
