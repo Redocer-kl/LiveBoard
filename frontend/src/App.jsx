@@ -1,7 +1,7 @@
 import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom"
 import "./App.css"
-import Whiteboard from "./Pages/Whiteboard";
-import MainPage from "./Pages/MainPage";
+import Whiteboard from "./pages/Whiteboard";
+import MainPage from "./pages/MainPage";
 
 function App() {
   

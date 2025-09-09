@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { Stage, Layer, Line } from "react-konva";
 import { ChromePicker } from "react-color";
 import "../styles/Whiteboard.css"
-import InstrumentButton from "../compoments/InstrumentButton";
-import Grid from "../compoments/Grid";
+import InstrumentButton from "../components/InstrumentButton";
+import Grid from "../components/Grid"
 import { FaHandPaper, FaPaintBrush } from "react-icons/fa";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
