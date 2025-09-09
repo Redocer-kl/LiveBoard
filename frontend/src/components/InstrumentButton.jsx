@@ -1,5 +1,5 @@
 import React from "react";
-import "./InstrumentButton.css";
+import "../styles/InstrumentButton";
 
 function InstrumentButton({ buttonInstrument, handleSetInstrument, Icon }) {
   return (
