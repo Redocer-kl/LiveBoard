@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
-import { Stage, Layer, Line } from "react-konva";
+import { Stage, Layer, Line, Shape } from "react-konva";
 import { ChromePicker } from "react-color";
 import "../styles/Whiteboard.css"
 import InstrumentButton from "../components/InstrumentButton";
@@ -7,6 +7,7 @@ import Grid from "../components/Grid"
 import { FaHandPaper, FaPaintBrush } from "react-icons/fa";
 import { AuthContext } from "../components/AuthContext";
 import SideBar from "../components/SideBar";
+import CursorsLayer from "../components/CursorsLayer";
 
 
 
@@ -22,6 +23,7 @@ function Whiteboard() {
   const [gridSize, setGridSize] = useState(40);
   const [colorActive, setColorActive] = useState(false);
 
+  const [usersMap, setUsersMap] = useState(() => new Map());
   const stageRef = useRef();
 
   useEffect(() => {
@@ -48,7 +50,7 @@ function Whiteboard() {
       try {
         const data = JSON.parse(evt.data);
         // server sends final strokes as: { type: "stroke_broadcast", clientId, strokeId, color, points: [{x,y}] , finished:true }
-        if ((data.type === "stroke_broadcast" || data.type === "stroke_update") && data.clientId !== clientIdRef.current) {
+        if ((data.type === "stroke_broadcast" || data.type === "stroke_update") && data.userId !== clientIdRef.current) {
           // Insert remote stroke into state
           // If the server sends a whole stroke at once, we just append it as a finished stroke
           setLines((prev) => [
@@ -62,10 +64,29 @@ function Whiteboard() {
             },
           ]);
         }
+
+       if (data.type === "cursor_update") {
+          const id = String(data.userId);
+          setUsersMap(prev => {
+            const next = new Map(prev); // new reference
+            next.set(id, {
+              userId: id,
+              color: data.color,
+              posx: data.posx,
+              posy: data.posy
+            });
+            return next;
+          });
+        }
+
+        
       } catch (err) {
         console.error("ws parse", err);
       }
     };
+    
+    
+
 
     return () => {
       if (ws && ws.readyState === WebSocket.OPEN) ws.close();
@@ -206,6 +227,19 @@ function Whiteboard() {
       const out = prev.slice(0, lastIndex).concat(updated);
       return out;
     });
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log("send cursor update")
+        ws.send(
+          JSON.stringify({
+            type: "cursor_update",
+            userId: clientIdRef.current,
+            color: colorState,
+            posx: pos.x,
+            posy: pos.y, 
+          })
+        );
+      }
   };
 
   const handleMouseUp = () => {
@@ -318,9 +352,11 @@ function Whiteboard() {
     return () => window.removeEventListener('resize', handleResize);
   }, []); 
 
+  const usersArray = Array.from(usersMap.values());
+
   return (
     <div style={{position: "relative"}}>
-      <h1 className="unselectable-element" style={{position: "absolute"}}> {user ? user.username : "Guest"}  Active instrument: {instrument}</h1>
+     
       <div className="instrument-buttons">
         <InstrumentButton buttonInstrument = {"hand"} handleSetInstrument = {setInstrument} Icon={FaHandPaper} />
         <InstrumentButton buttonInstrument = {"paint"} handleSetInstrument = {setInstrument} Icon={FaPaintBrush} />
@@ -342,8 +378,10 @@ function Whiteboard() {
           onChangeComplete={ (color) => setColorState(color.hex) }
         />
       </div>
+      
       <SideBar>
-
+          <h1 className="unselectable-element" style={{position: "absolute"}}> {user ? user.username : "Guest"}  Active instrument: {instrument}</h1>
+          
       </SideBar>
       <Stage
         ref={stageRef}
@@ -354,8 +392,10 @@ function Whiteboard() {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onWheel={handleWheel}
+        style={{backgroundColor: "#fff"}}
       >
         <Grid stageRef={stageRef} gridSize={gridSize} enabled={gridEnabled} />
+        
         <Layer>
           {lines.map((line, i) => (
             <Line
@@ -369,6 +409,7 @@ function Whiteboard() {
             />
           ))}
         </Layer>
+        <CursorsLayer users={usersArray} />
       </Stage>
     </div>
   );

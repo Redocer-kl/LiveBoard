@@ -39,6 +39,20 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 },
             )
 
+        if msg_type == "cursor_update":
+           await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "cursor_update",   # calls stroke_broadcast on consumers
+                    "sender_channel": self.channel_name,
+                    "userId": content.get("userId"),
+                    "color": content.get("color"),
+                    "posx": content.get("posx"),
+                    "posy": content.get("posy"),
+                },
+            ) 
+
+
     async def stroke_broadcast(self, event):
         """
         Handler for group messages. Runs on every consumer in the group.
@@ -59,3 +73,24 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 "finished": event.get("finished", False),
             }
         )
+
+    async def cursor_update(self, event):
+        """
+        Handler for group messages. Runs on every consumer in the group.
+        We'll skip sending to the origin by checking sender_channel.
+        """
+        # Skip origin (prevent echo back to the client that sent it)
+        if event.get("sender_channel") == self.channel_name:
+            return
+
+        # Send JSON to the connected WebSocket client
+        await self.send_json(
+            {
+                "type": "cursor_update",
+                "userId": event.get("userId"),
+                "color": event.get("color"),
+                "posx": event.get("posx"),
+                "posy": event.get("posy"),
+            }
+        )
+
