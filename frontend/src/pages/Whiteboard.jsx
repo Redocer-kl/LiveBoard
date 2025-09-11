@@ -65,12 +65,14 @@ function Whiteboard() {
           ]);
         }
 
-       if (data.type === "cursor_update") {
+       if (data.type === "cursor_update" && data.userId !== clientIdRef.current) {
+
           const id = String(data.userId);
           setUsersMap(prev => {
             const next = new Map(prev); // new reference
             next.set(id, {
               userId: id,
+              username: data.username,
               color: data.color,
               posx: data.posx,
               posy: data.posy
@@ -197,13 +199,31 @@ function Whiteboard() {
       strokeId,
       finished: false,
     };
-    console.log(lines);
 
     // add to local state (optimistic)
     setLines((prev) => [...prev, newLine]);
   };
 
+  const sendCursor = (e) => {
+    const stage = e.target.getStage();
+    const pos = stage.getRelativePointerPosition();
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log("send cursor update")
+        ws.send(
+          JSON.stringify({
+            type: "cursor_update",
+            userId: clientIdRef.current,
+            color: colorState,
+            posx: pos.x,
+            posy: pos.y, 
+          })
+        );
+      }
+  } 
+
   const handleMouseMove = (e) => {
+    sendCursor(e);
     if (instrument !== "paint") return;
     if (!isDrawing.current) return;
 
@@ -227,19 +247,6 @@ function Whiteboard() {
       const out = prev.slice(0, lastIndex).concat(updated);
       return out;
     });
-    const ws = wsRef.current;
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        console.log("send cursor update")
-        ws.send(
-          JSON.stringify({
-            type: "cursor_update",
-            userId: clientIdRef.current,
-            color: colorState,
-            posx: pos.x,
-            posy: pos.y, 
-          })
-        );
-      }
   };
 
   const handleMouseUp = () => {
@@ -320,7 +327,7 @@ function Whiteboard() {
     const direction = e.evt.deltaY > 0 ? -1 : 1; // deltaY>0 means scroll down
     let newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
     newScale = clampScale(newScale);
-    console.log(newScale);
+
 
     stage.scale({ x: newScale, y: newScale });
 

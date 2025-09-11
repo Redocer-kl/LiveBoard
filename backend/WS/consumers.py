@@ -1,5 +1,18 @@
 # myapp/consumers.py
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from channels.db import database_sync_to_async
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
+
+
+
+@database_sync_to_async
+def get_username_by_id(user_id):
+    User = get_user_model()
+    try:
+        return User.objects.get(pk=user_id).username
+    except ObjectDoesNotExist:
+        return None
 
 class RoomConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
@@ -37,15 +50,40 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                     "points": content.get("points"),
                     "finished": content.get("finished", False),
                 },
+                
             )
 
-        if msg_type == "cursor_update":
-           await self.channel_layer.group_send(
+        elif msg_type == "cursor_update":
+            user_id = content.get("userId")
+            # Try to avoid a DB hit if this socket is authenticated and the id matches.
+            username = None
+            if user_id is not None:
+                # user_id might be string from JSON, cast safely
+                try:
+                    uid_int = int(user_id)
+                except (TypeError, ValueError):
+                    uid_int = None
+
+                if (
+                    uid_int is not None
+                    and self.scope.get("user")
+                    and getattr(self.scope["user"], "is_authenticated", False)
+                    and getattr(self.scope["user"], "id", None) == uid_int
+                ):
+                    username = self.scope["user"].username
+                else:
+                    username = await get_username_by_id(uid_int)
+
+
+
+            # broadcast to others in the group (they will get username too)
+            await self.channel_layer.group_send(
                 self.group_name,
                 {
-                    "type": "cursor_update",   # calls stroke_broadcast on consumers
+                    "type": "cursor_update",   # will call cursor_update on other consumers
                     "sender_channel": self.channel_name,
-                    "userId": content.get("userId"),
+                    "userId": user_id,
+                    "username": username,
                     "color": content.get("color"),
                     "posx": content.get("posx"),
                     "posy": content.get("posy"),
@@ -88,6 +126,7 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
             {
                 "type": "cursor_update",
                 "userId": event.get("userId"),
+                "username": event.get("username"),
                 "color": event.get("color"),
                 "posx": event.get("posx"),
                 "posy": event.get("posy"),

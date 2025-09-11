@@ -15,8 +15,8 @@ import React, { useMemo } from 'react';
 import { Layer, Group, Arrow, Circle, Rect, Text } from 'react-konva';
 
 function CursorShape({ user, size = 18, showLabel = true }) {
-  const { userId, color = '#ff0000', posx = 0, posy = 0, label } = user;
-  const labelText = String(label ?? `User ${userId}`);
+  const { userId, username, color = '#ff0000', posx = 0, posy = 0, label } = user;
+  const labelText = String(label ?? `${username}`);
 
   // Arrow geometry relative to group origin (0,0 is where we place the group)
   const arrowPoints = [0, 0, -size * 0.45, -size * 1.2];
@@ -27,21 +27,21 @@ function CursorShape({ user, size = 18, showLabel = true }) {
   const approxCharW = 7;
   const labelW = Math.max(60, labelText.length * approxCharW + labelPadding * 2);
   const labelH = 20;
-  const labelOffsetX = -labelW - size * 0.2;
-  const labelOffsetY = -size * 2.1;
+  const labelOffsetX = -labelW - size * 0.5;
+  const labelOffsetY = -size * 2.5;
 
   return (
-    <Group x={posx} y={posy}>
+    <Group x={posx + 10} y={posy + 20}>
       <Arrow
         points={arrowPoints}
-        pointerLength={size * 0.6}
-        pointerWidth={size * 0.42}
-        fill={color}
-        stroke={color}
+        pointerLength={size * 0.9}
+        pointerWidth={size * 0.7}
+        fill={"#fff"}
+        stroke={"#000"}
         strokeWidth={1}
       />
 
-      <Circle x={dotX} y={dotY} radius={size * 0.22} fill={color} stroke="#fff" strokeWidth={1} />
+
 
       {showLabel && (
         <Group x={labelOffsetX} y={labelOffsetY}>
