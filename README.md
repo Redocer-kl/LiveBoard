@@ -8,7 +8,7 @@ A web application for real-time collaborative drawing, demonstrating the integra
 - **Backend**: Django Channels architecture (infrastructure for real-time updates).
 
 ## Roadmap
-- [ ] Persistence: Saving boards to PostgreSQL.
+- [ ] Persistence: Saving boards to PostgreSQL and cashing in Redis for live-workers on a board.
 - [ ] Multi-room support for different collaborative sessions.
 
 ## Tech Stack
